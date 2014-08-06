@@ -75,8 +75,9 @@ namespace ofxLibwebsockets {
             // we're not really worried about this at the moment
             case LWS_CALLBACK_ADD_POLL_FD:
 			case LWS_CALLBACK_DEL_POLL_FD:
-			case LWS_CALLBACK_SET_MODE_POLL_FD:
-			case LWS_CALLBACK_CLEAR_MODE_POLL_FD:
+			case LWS_CALLBACK_CHANGE_MODE_POLL_FD:
+			case LWS_CALLBACK_LOCK_POLL:
+			case LWS_CALLBACK_UNLOCK_POLL:
                 return 1;
                 
             default:
@@ -101,6 +102,8 @@ namespace ofxLibwebsockets {
         const struct libwebsocket_protocols* lws_protocol = (ws == NULL ? NULL : libwebsockets_get_protocol(ws));
         int idx = lws_protocol? lws_protocol->protocol_index : 0;   
         
+		if (reason == LWS_CALLBACK_GET_THREAD_ID) return 0;
+
         // valid connection w/o a protocol
         if ( ws != NULL && lws_protocol == NULL ){
             // OK for now, returning 0 above
@@ -144,6 +147,7 @@ namespace ofxLibwebsockets {
                 return 0;
                 
             case LWS_CALLBACK_FILTER_NETWORK_CONNECTION:
+			case LWS_CALLBACK_FILTER_HTTP_CONNECTION:
                 if (protocol != NULL ){
                     return reactor->_allow(ws, protocol, (int)(long)user)? 0 : 1;
                 } else {
@@ -156,11 +160,22 @@ namespace ofxLibwebsockets {
                 // we're not really worried about this at the moment
             case LWS_CALLBACK_ADD_POLL_FD:
 			case LWS_CALLBACK_DEL_POLL_FD:
-			case LWS_CALLBACK_SET_MODE_POLL_FD:
-			case LWS_CALLBACK_CLEAR_MODE_POLL_FD:
+			case LWS_CALLBACK_CHANGE_MODE_POLL_FD:
+			case LWS_CALLBACK_LOCK_POLL:
+			case LWS_CALLBACK_UNLOCK_POLL:
             case LWS_CALLBACK_PROTOCOL_DESTROY:
                 return 0;
+
+			case LWS_CALLBACK_WSI_CREATE:
+			case LWS_CALLBACK_WSI_DESTROY:
+				return 0;
+
+			//case LWS_CALLBACK_GET_THREAD_ID:
+			//	return 0;
                 
+			case LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED:
+				return 0;
+
             default:
                 conn = *(Connection**)user;
                 
@@ -233,10 +248,14 @@ namespace ofxLibwebsockets {
 			case LWS_CALLBACK_SERVER_WRITEABLE : return "LWS_CALLBACK_SERVER_WRITEABLE";
 
 			case LWS_CALLBACK_HTTP : return "LWS_CALLBACK_HTTP";
+			case LWS_CALLBACK_HTTP_BODY: return "LWS_CALLBACK_HTTP_BODY";
+			case LWS_CALLBACK_HTTP_BODY_COMPLETION: return "LWS_CALLBACK_HTTP_BODY";
 			case LWS_CALLBACK_HTTP_FILE_COMPLETION : return "LWS_CALLBACK_HTTP_FILE_COMPLETION";
 			case LWS_CALLBACK_HTTP_WRITEABLE : return "LWS_CALLBACK_HTTP_WRITEABLE";
 			case LWS_CALLBACK_FILTER_NETWORK_CONNECTION : return "LWS_CALLBACK_FILTER_NETWORK_CONNECTION";
 			case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION : return "LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION";
+			case LWS_CALLBACK_FILTER_HTTP_CONNECTION: return "LWS_CALLBACK_FILTER_HTTP_CONNECTION";
+			case LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED: return "LWS_CALLBACK_SERVER_NEW_CLIENT_INSTANTIATED";
 			case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS : return "LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS";
 			case LWS_CALLBACK_OPENSSL_LOAD_EXTRA_SERVER_VERIFY_CERTS : return "LWS_CALLBACK_OPENSSL_LOAD_EXTRA_SERVER_VERIFY_CERTS";
 			case LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION : return "LWS_CALLBACK_OPENSSL_PERFORM_CLIENT_CERT_VERIFICATION";
@@ -246,10 +265,14 @@ namespace ofxLibwebsockets {
 			case LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED : return "LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED";
 			case LWS_CALLBACK_PROTOCOL_INIT : return "LWS_CALLBACK_PROTOCOL_INIT";
 			case LWS_CALLBACK_PROTOCOL_DESTROY : return "LWS_CALLBACK_PROTOCOL_DESTROY";
+			case LWS_CALLBACK_WSI_CREATE: return "LWS_CALLBACK_WSI_CREATE";
+			case LWS_CALLBACK_WSI_DESTROY: return "LWS_CALLBACK_WSI_DESTROY";
+			case LWS_CALLBACK_GET_THREAD_ID: return "LWS_CALLBACK_GET_THREAD_ID";
 			case LWS_CALLBACK_ADD_POLL_FD : return "LWS_CALLBACK_ADD_POLL_FD";
 			case LWS_CALLBACK_DEL_POLL_FD : return "LWS_CALLBACK_DEL_POLL_FD";
-			case LWS_CALLBACK_SET_MODE_POLL_FD : return "LWS_CALLBACK_SET_MODE_POLL_FD";
-			case LWS_CALLBACK_CLEAR_MODE_POLL_FD : return "LWS_CALLBACK_CLEAR_MODE_POLL_FD";
+			case LWS_CALLBACK_CHANGE_MODE_POLL_FD: return "LWS_CALLBACK_CHANGE_MODE_POLL_FD";
+			case LWS_CALLBACK_LOCK_POLL: return "LWS_CALLBACK_LOCK_POLL";
+			case LWS_CALLBACK_UNLOCK_POLL: return "LWS_CALLBACK_UNLOCK_POLL";
 
 			default: 
 				std::stringstream r;
