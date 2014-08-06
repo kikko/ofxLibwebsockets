@@ -47,7 +47,7 @@ namespace ofxLibwebsockets {
             }
         }
         
-        ofLog( OF_LOG_VERBOSE, getCallbackReason(reason) );
+		ofLog(OF_LOG_VERBOSE, ofxLibwebsockets::getCallbackReason(reason));
         
         if (reason == LWS_CALLBACK_CLIENT_ESTABLISHED ){
             libwebsocket_callback_on_writable(context, ws);
@@ -125,7 +125,7 @@ namespace ofxLibwebsockets {
             }
         }
         
-        ofLog( OF_LOG_VERBOSE, getCallbackReason(reason) );
+		ofLogVerbose("ofxLibwebsockets") << getCallbackReason(reason);
         
         if (reason == LWS_CALLBACK_ESTABLISHED){
             libwebsocket_callback_on_writable(context, ws);
